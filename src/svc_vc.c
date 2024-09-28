@@ -775,6 +775,8 @@ static enum haproxy_ret_code handle_haproxy_header(SVCXPRT *xprt)
 	struct proxy_header_part s;
 	union proxy_addr pa;
 	enum haproxy_ret_code ret;
+	struct rpc_dplx_rec *rec = REC_XPRT(xprt);
+	struct svc_vc_xprt *xd = VC_DR(rec);
 
 	__warnx(TIRPC_DEBUG_FLAG_SVC_VC,
 			"%s: %p fd %d potential haproxy packet",
@@ -803,6 +805,8 @@ static enum haproxy_ret_code handle_haproxy_header(SVCXPRT *xprt)
 		return HAPROXY_RET_CODE__NOT_HAPROXY;
 	}
 
+	/* Reset the sx_fbtbc for HA Proxy v2*/
+	xd->sx_fbtbc = 0;
 	rlen = recv(xprt->xp_fd, rest, sizeof(rest), MSG_WAITALL);
 	if (rlen != sizeof(rest)) {
 		__warnx(TIRPC_DEBUG_FLAG_ERROR,
